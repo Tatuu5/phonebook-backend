@@ -6,14 +6,14 @@ const Person = require('./models/person')
 app.use(express.static('dist'))
 app.use(express.json())
 
-morgan.token('postData', (req, res) => JSON.stringify(req.body))
+morgan.token('postData', (request, response) => JSON.stringify(request.body))
 
 app.use(morgan('tiny', {
-  skip: (req, res) => req.method === 'POST'
+  skip: (request, response) => request.method === 'POST'
 }))
 
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :postData',
-   {skip: (request, response) => request.method !== 'POST'}))
+  { skip: (request, response) => request.method !== 'POST' }))
 
 
 
@@ -43,78 +43,78 @@ let people = [
 */
 
 app.get('/info', (request, response, next) => {
-    
-    Person.countDocuments({})
-      .then(amount => {
-        const currentTime = Date()
-        response.send(`<div>Phonebook has info for ${amount} people</div>
+
+  Person.countDocuments({})
+    .then(amount => {
+      const currentTime = Date()
+      response.send(`<div>Phonebook has info for ${amount} people</div>
                     <br>
                     <div>${currentTime}</div>`)
-                  })
-      .catch(error => next(error))               
+    })
+    .catch(error => next(error))
 })
 
 
 app.get('/api/persons/:id', (request, response, next) => {
-    const id = request.params.id
-    
-    Person.findById(id)
-      .then(person => {
+  const id = request.params.id
+
+  Person.findById(id)
+    .then(person => {
       if (person) {
-          response.json(person)
+        response.json(person)
       } else {
-          response.status(404).end()
+        response.status(404).end()
       }
-      })
-      .catch(error => next(error))
+    })
+    .catch(error => next(error))
 })
 
 
 
 app.delete('/api/persons/:id', (request, response, next) => {
-    const id = request.params.id
-    Person.findByIdAndDelete(id)
-      .then(result => {
-        response.status(204).end()
-      })
-      .catch(error => next(error))
+  const id = request.params.id
+  Person.findByIdAndDelete(id)
+    .then(() => {
+      response.status(204).end()
+    })
+    .catch(error => next(error))
 })
 
 app.get('/api/persons', (request, response, next) => {
-    Person.find({}).then(persons => {
-      response.json(persons)
-    })
-    .catch(error => next(error))
+  Person.find({}).then(persons => {
+    response.json(persons)
   })
-  
+    .catch(error => next(error))
+})
+
 
 app.post('/api/persons', (request, response, next) => {
-    const body = request.body
+  const body = request.body
 
-    if (!body.name || !body.number) {
-        return response.status(400).json({
-            error: 'name or number missing'
-        })
-    }
-    
-    const person = new Person({
+  if (!body.name || !body.number) {
+    return response.status(400).json({
+      error: 'name or number missing'
+    })
+  }
+
+  const person = new Person({
     name: body.name,
     number: body.number
-    })
-    
-    person.save().then(result => {
-      console.log(`added ${result.name} number ${result.number} to phonebook`)
-      response.json(person)
-    })
+  })
+
+  person.save().then(result => {
+    console.log(`added ${result.name} number ${result.number} to phonebook`)
+    response.json(person)
+  })
     .catch(error => next(error))
 })
 
 app.put('/api/persons/:id', (request, response, next) => {
   const { name, number } = request.body
 
-  
 
-  Person.findByIdAndUpdate(request.params.id, { name, number }, { new: true, runValidators: true, context: 'query'})
+
+  Person.findByIdAndUpdate(request.params.id, { name, number }, { new: true, runValidators: true, context: 'query' })
     .then(updatedPerson => {
       response.json(updatedPerson)
       console.log(updatedPerson)
