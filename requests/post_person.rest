@@ -3,5 +3,5 @@ Content-Type: application/json
 
 {
     "name": "Peter Pan",
-    "number": "123-321"
+    "number": "12345"
 }
