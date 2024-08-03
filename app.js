@@ -20,6 +20,11 @@ mongoose.connect(config.MONGODB_URI)
   })
 
 
+app.use(express.static('dist'))
+app.use(express.json())
+
+morgan.token('postData', (request, response) => JSON.stringify(request.body))
+
 app.use(morgan('tiny', {
     skip: (request, response) => request.method === 'POST'
 }))
@@ -27,11 +32,9 @@ app.use(morgan('tiny', {
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :postData',
     { skip: (request, response) => request.method !== 'POST' }))
 
-app.use(express.static('dist'))
-app.use(express.json())
-
 
 app.use('/api/persons', personsRouter)
+
 
 app.use(middleware.unknownEndpoint)
 app.use(middleware.errorHandler)
